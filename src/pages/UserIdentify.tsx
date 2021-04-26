@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
   Keyboard,
+  Alert,
 } from "react-native";
 
 import { useNavigation } from "@react-navigation/core";
@@ -18,19 +19,35 @@ import { Feather } from "@expo/vector-icons";
 import colors from "../styles/colors";
 import fonts from "../styles/fonts";
 import { Button } from "../components/Button";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export function UserIdentify() {
+  const navigator = useNavigation();
   const [isInputFilled, setIsInputFilled] = useState(false);
   const [inputValue, setInputValue] = useState<string>("");
-  const navigator = useNavigation();
+
+  async function handleSubmit() {
+    if (isInputFilled) {
+      try {
+        await AsyncStorage.setItem("@plant_management:user", inputValue);
+        return navigator.navigate("Confirmation", {
+          icon: "smile",
+          title: "Prontinho, " + inputValue,
+          subtitle:
+            "Agora vamos começar a cuidar das\nsuas plantinhas com muito cuidado.",
+          buttonTitle: "Começar",
+          nextScreen: "PlantSelect",
+        });
+      } catch (e) {
+        return Alert.alert("Não foi possível salvar seu nome!");
+      }
+    }
+    return Alert.alert("Me diz como chamar você?");
+  }
 
   function handleInputChange(value: string) {
     setIsInputFilled(value !== "" || !!value);
     setInputValue(value);
-  }
-
-  function handleSubmit() {
-    navigator.navigate("Confirmation");
   }
 
   return (
